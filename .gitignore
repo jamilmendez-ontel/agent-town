@@ -3,6 +3,12 @@ dist/
 *.log
 public/assets/*
 !public/assets/.gitkeep
+# committed CC0 runtime art (Kenney Tiny Town, ~15KB) — required to run
+!public/assets/README.md
+!public/assets/KENNEY_LICENSE.txt
+!public/assets/tilemap.png
+!public/assets/character.png
+!public/assets/grass.png
 
 # generated output / throwaway scripts
 out/
