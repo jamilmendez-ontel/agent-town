@@ -12,7 +12,21 @@ app.use(express.json())
 
 const state = new TownState()
 const httpServer = createServer(app)
-const wss = new WebSocketServer({ server: httpServer })
+// Reject cross-site websocket hijacking: browsers always send an Origin header,
+// so a malicious page is blocked; non-browser clients (tests/tools) send none and are allowed.
+function originAllowed(origin: string | undefined): boolean {
+  if (!origin) return true
+  try {
+    const host = new URL(origin).hostname
+    return host === 'localhost' || host === '127.0.0.1'
+  } catch {
+    return false
+  }
+}
+const wss = new WebSocketServer({
+  server: httpServer,
+  verifyClient: (info: { origin: string }) => originAllowed(info.origin),
+})
 
 function broadcast(actions: TownAction[]): void {
   const payload = JSON.stringify({ type: 'actions', actions })
@@ -44,6 +58,7 @@ app.post('/events', (req, res) => {
   res.json({ accepted, rejected: events.length - accepted })
 })
 
-httpServer.listen(PORT, () => {
-  console.log(`[agent-town] collector listening on http://localhost:${PORT}`)
+// Bind to loopback only: this is a single-user local dev tool, never exposed to the network.
+httpServer.listen(PORT, '127.0.0.1', () => {
+  console.log(`[agent-town] collector listening on http://127.0.0.1:${PORT}`)
 })

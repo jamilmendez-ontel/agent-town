@@ -1,5 +1,7 @@
 import type { TownAction, TownSnapshot, WorkerActivity } from '../shared/types'
 
+const UNSAFE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
 // Source of truth for persistent world state. Transient actions
 // (caravan, effect, apprentice) are pushed to clients but not stored.
 export class TownState {
@@ -9,9 +11,11 @@ export class TownState {
   apply(action: TownAction): void {
     switch (action.type) {
       case 'building':
+        if (UNSAFE_KEYS.has(action.project)) break
         this.buildings[action.project] = action.state
         break
       case 'worker':
+        if (UNSAFE_KEYS.has(action.actor)) break
         if (action.activity === 'leave') {
           delete this.workers[action.actor]
         } else {
@@ -24,8 +28,8 @@ export class TownState {
 
   getSnapshot(): TownSnapshot {
     return {
-      buildings: { ...this.buildings },
-      workers: structuredClone(this.workers),
+      buildings: Object.assign(Object.create(null) as Record<string, TownSnapshot['buildings'][string]>, this.buildings),
+      workers: Object.assign(Object.create(null) as Record<string, { project: string; activity: WorkerActivity }>, structuredClone(this.workers)),
     }
   }
 }

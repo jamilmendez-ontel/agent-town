@@ -29,4 +29,15 @@ describe('TownState', () => {
     s.apply({ type: 'effect', project: 'p', effect: 'sparkle', ts: 2 })
     expect(s.getSnapshot()).toEqual({ buildings: {}, workers: {} })
   })
+
+  it('ignores prototype-pollution keys and never pollutes Object.prototype', () => {
+    const s = new TownState()
+    s.apply({ type: 'building', project: '__proto__', state: 'fire', ts: 1 })
+    s.apply({ type: 'worker', project: 'p', actor: 'constructor', activity: 'enter', ts: 2 })
+    const snap = s.getSnapshot()
+    expect(snap.buildings['__proto__']).toBeUndefined()
+    expect(snap.workers['constructor']).toBeUndefined()
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined()
+    expect(Object.prototype.hasOwnProperty.call(snap.buildings, '__proto__')).toBe(false)
+  })
 })
