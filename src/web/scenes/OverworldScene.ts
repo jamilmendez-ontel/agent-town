@@ -90,4 +90,27 @@ export class OverworldScene extends Phaser.Scene {
     a.setActivity('bustle')
     this.time.delayedCall(2500, () => { a.moveTo(40, this.scale.height - 40); this.time.delayedCall(750, () => a.destroy()) })
   }
+
+  sendCaravan(project: string, phase: 'depart' | 'arrive') {
+    const gate = this.gateFor(project)
+    const depot = { x: this.scale.width - 60, y: 60 } // central market/warehouse
+    const from = phase === 'depart' ? gate : depot
+    const to = phase === 'depart' ? depot : gate
+    const crate = this.add.rectangle(from.x, from.y, 16, 12, 0xc9a06a).setStrokeStyle(2, 0x000000)
+    this.tweens.add({
+      targets: crate, x: to.x, y: to.y, duration: 1400, ease: 'Sine.easeInOut',
+      onComplete: () => crate.destroy(),
+    })
+  }
+
+  playEffect(project: string, effect: 'sparkle' | 'banner_ok') {
+    const b = buildingFor(project)
+    if (!b) return
+    const c = this.cellCenter(b)
+    const fx = this.add.text(c.x, c.y - 60, effect === 'banner_ok' ? '✓' : '✦', {
+      fontSize: '22px',
+      color: effect === 'banner_ok' ? '#7cf9b0' : '#ffe066',
+    }).setOrigin(0.5)
+    this.tweens.add({ targets: fx, y: c.y - 90, alpha: 0, duration: 900, onComplete: () => fx.destroy() })
+  }
 }

@@ -25,6 +25,8 @@ connectTown({
       if (a.type === 'building') overworld()?.setBuildingState(a.project, a.state)
       else if (a.type === 'worker') overworld()?.upsertWorker(a.actor, a.project, a.activity)
       else if (a.type === 'apprentice') overworld()?.spawnApprentice(a.project)
+      else if (a.type === 'caravan') overworld()?.sendCaravan(a.project, a.phase)
+      else if (a.type === 'effect') overworld()?.playEffect(a.project, a.effect)
     }
   },
 })
