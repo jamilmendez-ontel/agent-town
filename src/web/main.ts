@@ -18,10 +18,13 @@ connectTown({
   onStatus: (c) => overworld()?.setStatus(c),
   onSnapshot: (snap) => {
     for (const [project, state] of Object.entries(snap.buildings)) overworld()?.setBuildingState(project, state)
+    for (const [actor, w] of Object.entries(snap.workers)) overworld()?.upsertWorker(actor, w.project, w.activity)
   },
   onActions: (actions) => {
     for (const a of actions) {
       if (a.type === 'building') overworld()?.setBuildingState(a.project, a.state)
+      else if (a.type === 'worker') overworld()?.upsertWorker(a.actor, a.project, a.activity)
+      else if (a.type === 'apprentice') overworld()?.spawnApprentice(a.project)
     }
   },
 })

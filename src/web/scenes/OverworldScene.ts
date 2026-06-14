@@ -1,6 +1,7 @@
 import Phaser from 'phaser'
 import { TOWN, GRID, buildingFor, type Building } from '../town.config'
 import type { BuildingState } from '../../shared/types'
+import { Worker } from '../sprites/Worker'
 
 const STATE_TINT: Record<BuildingState, number> = {
   active: 0xffffff,
@@ -58,5 +59,35 @@ export class OverworldScene extends Phaser.Scene {
     const base = buildingFor(project)!.color
     rect.setFillStyle(state === 'fire' || state === 'construction' || state === 'stale' ? STATE_TINT[state] : base)
     rect.setAlpha(state === 'idle' ? 0.6 : 1)
+  }
+
+  private workers = new Map<string, Worker>()
+
+  private gateFor(project: string) {
+    const b = buildingFor(project)
+    if (!b) return { x: 60, y: 60 }
+    const c = this.cellCenter(b)
+    return { x: c.x, y: c.y + 30 }
+  }
+
+  upsertWorker(actor: string, project: string, activity: import('../../shared/types').WorkerActivity) {
+    if (activity === 'leave') {
+      const w = this.workers.get(actor)
+      if (w) { w.moveTo(40, this.scale.height - 40); this.time.delayedCall(750, () => w.destroy()) }
+      this.workers.delete(actor)
+      return
+    }
+    let w = this.workers.get(actor)
+    const gate = this.gateFor(project)
+    if (!w) { w = new Worker(this, 40, this.scale.height - 40); this.workers.set(actor, w) }
+    w.moveTo(gate.x, gate.y)
+    w.setActivity(activity)
+  }
+
+  spawnApprentice(project: string) {
+    const gate = this.gateFor(project)
+    const a = new Worker(this, gate.x - 20, gate.y + 16)
+    a.setActivity('bustle')
+    this.time.delayedCall(2500, () => { a.moveTo(40, this.scale.height - 40); this.time.delayedCall(750, () => a.destroy()) })
   }
 }
