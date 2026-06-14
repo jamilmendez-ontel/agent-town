@@ -30,11 +30,13 @@ async function main() {
     case 'tool':    await post({ kind: 'tool_use', project, sessionId: sid, tool: arg ?? 'Edit', ts: now() }); break
     case 'subagent':await post({ kind: 'subagent', project, sessionId: sid, ts: now() }); break
     case 'end':     await post({ kind: 'session_end', project, sessionId: sid, ts: now() }); break
-    case 'caravan':
-      await post({ kind: 'run_start', project, runId: 'r' + now(), source: 'gha', ts: now() })
+    case 'caravan': {
+      const runId = 'r' + now()
+      await post({ kind: 'run_start', project, runId, source: 'gha', ts: now() })
       await sleep(2000)
-      await post({ kind: 'run_success', project, runId: 'r' + now(), source: 'gha', ts: now() })
+      await post({ kind: 'run_success', project, runId, source: 'gha', ts: now() })
       break
+    }
     case 'fail':    await post({ kind: 'run_fail', project, runId: 'r' + now(), source: 'gha', ts: now() }); break
     case 'commit':  await post({ kind: 'commit', project, sha: 'deadbee', ts: now() }); break
     case 'edit':    await post({ kind: 'file_edit', project, path: 'x.ts', ts: now() }); break
@@ -44,8 +46,9 @@ async function main() {
       await post({ kind: 'tool_use', project, sessionId: s, tool: 'Read', ts: now() }); await sleep(800)
       await post({ kind: 'tool_use', project, sessionId: s, tool: 'Edit', ts: now() }); await sleep(800)
       await post({ kind: 'subagent', project, sessionId: s, ts: now() }); await sleep(800)
-      await post({ kind: 'run_start', project, runId: 'rd' + now(), source: 'pipeline', ts: now() }); await sleep(1500)
-      await post({ kind: 'run_success', project, runId: 'rd' + now(), source: 'pipeline', ts: now() }); await sleep(800)
+      const runId = 'rd' + now()
+      await post({ kind: 'run_start', project, runId, source: 'pipeline', ts: now() }); await sleep(1500)
+      await post({ kind: 'run_success', project, runId, source: 'pipeline', ts: now() }); await sleep(800)
       await post({ kind: 'session_end', project, sessionId: s, ts: now() })
       break
     }
