@@ -3,3 +3,6 @@ dist/
 *.log
 public/assets/*
 !public/assets/.gitkeep
+
+# generated output / throwaway scripts
+out/

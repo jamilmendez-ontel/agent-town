@@ -4,6 +4,7 @@ import { createServer } from 'node:http'
 import { isRawEvent, type RawEvent, type TownAction } from '../shared/types'
 import { translate } from './translator'
 import { TownState } from './town-state'
+import { startPipelineGha } from './adapters/pipeline-gha'
 
 const PORT = Number(process.env.AGENT_TOWN_PORT ?? 7373)
 
@@ -57,6 +58,10 @@ app.post('/events', (req, res) => {
   }
   res.json({ accepted, rejected: events.length - accepted })
 })
+
+// Live-data adapters: each polls its own source and feeds ingest(). Adapter
+// failures are isolated and never crash the collector.
+startPipelineGha(ingest)
 
 // Bind to loopback only: this is a single-user local dev tool, never exposed to the network.
 httpServer.listen(PORT, '127.0.0.1', () => {
