@@ -41,6 +41,12 @@ export class OverworldScene extends Phaser.Scene {
       const rect = this.add.rectangle(x, y, 110, 80, b.color).setStrokeStyle(3, 0xffffff)
       rect.setData('project', b.project)
       rect.setInteractive({ useHandCursor: true })
+      if (b.project === 'local-pipeline') {
+        rect.on('pointerdown', () => {
+          this.scene.pause('Overworld')
+          this.scene.launch('Interior')
+        })
+      }
       this.rects.set(b.project, rect)
       this.add.text(x, y + 50, b.label, { fontFamily: 'monospace', fontSize: '12px', color: '#cdd9e5' }).setOrigin(0.5)
     }
