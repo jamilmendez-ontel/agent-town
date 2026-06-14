@@ -23,18 +23,19 @@ describe('translate', () => {
   it('Read/Grep/Glob -> research', () => {
     for (const tool of ['Read', 'Grep', 'Glob']) {
       const out = translate({ kind: 'tool_use', project: P, sessionId: 's1', tool, ts: 3 })
-      expect(out[0].type === 'worker' && out[0].activity).toBe('research')
+      expect(out).toHaveLength(1)
+      expect(out[0]).toEqual({ type: 'worker', project: P, actor: 's1', activity: 'research', ts: 3 })
     }
   })
 
   it('Bash -> machinery', () => {
     const out = translate({ kind: 'tool_use', project: P, sessionId: 's1', tool: 'Bash', ts: 4 })
-    expect(out[0].type === 'worker' && out[0].activity).toBe('machinery')
+    expect(out).toEqual([{ type: 'worker', project: P, actor: 's1', activity: 'machinery', ts: 4 }])
   })
 
   it('unknown tool -> bustle (graceful)', () => {
     const out = translate({ kind: 'tool_use', project: P, sessionId: 's1', tool: 'Frobnicate', ts: 5 })
-    expect(out[0].type === 'worker' && out[0].activity).toBe('bustle')
+    expect(out).toEqual([{ type: 'worker', project: P, actor: 's1', activity: 'bustle', ts: 5 }])
   })
 
   it('subagent -> apprentice', () => {
@@ -83,5 +84,11 @@ describe('translate', () => {
       .toEqual([{ type: 'building', project: P, state: 'stale', ts: 13 }])
     expect(translate({ kind: 'health', project: P, status: 'healthy', ts: 14 }))
       .toEqual([{ type: 'building', project: P, state: 'idle', ts: 14 }])
+  })
+
+  it('unknown event kind -> non-empty bustle fallback (never dropped)', () => {
+    const out = translate({ kind: 'totally_new_kind', project: P, ts: 99 } as unknown as RawEvent)
+    expect(out.length).toBeGreaterThan(0)
+    expect(out[0]).toMatchObject({ type: 'worker', activity: 'bustle', project: P, ts: 99 })
   })
 })

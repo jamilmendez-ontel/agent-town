@@ -7,7 +7,9 @@ function toolActivity(tool: string): WorkerActivity {
   if (CRAFT.has(tool)) return 'craft'
   if (RESEARCH.has(tool)) return 'research'
   if (tool === 'Bash') return 'machinery'
-  return 'bustle' // graceful default for unknown tools
+  // 'Task' (subagent dispatch) and any other tool intentionally fall through to
+  // 'bustle': subagents are surfaced via the separate 'subagent' event kind, not here.
+  return 'bustle'
 }
 
 export function translate(e: RawEvent): TownAction[] {
